@@ -1,0 +1,6 @@
+dist/
+venv/
+__pycache__/
+tests/bytes
+tests/images
+n64tex.egg-info/
