@@ -46,7 +46,7 @@ class TestRGBAImage(unittest.TestCase):
 class TestRGBA5551Image(unittest.TestCase):
     def setUp(self) -> None:
         self.image = RGBA5551Image.from_bytes(
-            raw_bytes=b"\x01\xf8\xc1\x07?\x00\x01\x00\xff\xff\xfe\xff",
+            raw_bytes=b'\xf8\x01\x07\xc1\x00?\x00\x01\xff\xff\xff\xfe',
             width=3,
             height=2,
         )
@@ -63,7 +63,7 @@ class TestRGBA5551Image(unittest.TestCase):
     def test_bytes(self):
         self.assertEqual(
             self.image.data_array.tobytes(),
-            b"\x01\xf8\xc1\x07?\x00\x01\x00\xff\xff\xfe\xff",
+            b'\xf8\x01\x07\xc1\x00?\x00\x01\xff\xff\xff\xfe',
         )
 
     def test_conversion_to_rgba(self):

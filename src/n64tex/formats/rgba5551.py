@@ -30,8 +30,8 @@ class RGBA5551Image(BaseImage):
         Returns:
             RGBA5551Image: RGBA5551Image object
         """
-        data_array = np.frombuffer(raw_bytes, dtype='<u2')
-        data_array = np.resize(data_array, (height, width))
+        data_array = np.frombuffer(raw_bytes, dtype='>u2')
+        data_array = np.resize(data_array, (height, width)).astype('>u2')
         return cls(data_array, width, height)
     
     def to_rgba(self) -> 'RGBAImage':
