@@ -89,11 +89,8 @@ class RGBAImage(BaseImage):
         Returns:
             I8Image: Converted I8Image object
         """
-        # reduce_bytes = lambda x: x // 17
-        
         i8_data_array = self.data_array.copy()
-        i8_data_array = np.average(i8_data_array, axis=2)
-        # i8_data_array = reduce_bytes(i8_data_array).astype(np.uint8)
+        i8_data_array = np.average(i8_data_array, axis=2).astype(np.uint8)
         
         from n64tex.formats.i8 import I8Image
         return I8Image(i8_data_array, self.width, self.height)
