@@ -1,4 +1,4 @@
-from typing import TypeVar
+from typing import TypeVar, TYPE_CHECKING
 from abc import ABC, abstractclassmethod
 
 import numpy as np
@@ -6,6 +6,8 @@ from PIL import Image
 
 T = TypeVar('T', bound='BaseImage')
 
+if TYPE_CHECKING:
+    from n64tex.formats import RGBAImage, RGBA5551Image, I4Image, I8Image
 class BaseImage(ABC):
     """Base class to derive image format classes from"""
     def __init__(self, data_array: np.array, width: int, height: int):
@@ -44,6 +46,12 @@ class BaseImage(ABC):
             width = image.width
         if height is None:
             height = image.height
+            
+        # TODO: I *hate* this. If anyone sees this and has a better way to do it please have a crack at it
+        from n64tex.formats.rgba import RGBAImage
+        if not issubclass(cls, RGBAImage):
+            return RGBAImage.from_image(image, width, height).convert_to(cls)
+            
         return cls.from_bytes(image.tobytes(), width, height)
         
     def save(self, filename: str):
@@ -57,3 +65,27 @@ class BaseImage(ABC):
         else:
             image = Image.fromarray(self.data_array)
         image.save(filename)
+        
+    def to_rgba5551(self) -> 'RGBA5551Image':
+        """Convert to RGBA5551Image
+
+        Returns:
+            RGBA5551Image: Converted RGBA5551Image object
+        """
+        return self.to_rgba().to_rgba5551()
+    
+    def to_i4(self) -> 'I4Image':
+        """Convert to I4Image
+
+        Returns:
+            I4Image: Converted I4Image object
+        """
+        return self.to_rgba().to_i4()
+    
+    def to_i8(self) -> 'I8Image':
+        """Convert to I8Image
+
+        Returns:
+            I8Image: Converted I8Image object
+        """
+        return self.to_rgba().to_i8()
