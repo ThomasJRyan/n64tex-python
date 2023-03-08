@@ -7,9 +7,9 @@ An image converter for N64 image formats written in Python
 
 [x] RGBA5551
 
-[ ] I4
+[X] I4
 
-[ ] I8
+[X] I8
 
 [ ] IA4
 
