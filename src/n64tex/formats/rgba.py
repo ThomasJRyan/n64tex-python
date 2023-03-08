@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from n64tex.formats import RGBA5551Image
+    from n64tex.formats import RGBA5551Image, I4Image
 
 import numpy as np
 
@@ -59,3 +59,17 @@ class RGBAImage(BaseImage):
         from n64tex.formats.rgba5551 import RGBA5551Image
         return RGBA5551Image(rgba_5551_data_array, self.width, self.height)
     
+    def to_i4(self) -> 'I4Image':
+        """Converts RGBAImage to I4Image
+
+        Returns:
+            I4Image: Converted I4Image object
+        """
+        reduce_bytes = lambda x: x // 17
+        
+        i4_data_array = self.data_array.copy()
+        i4_data_array = np.average(i4_data_array, axis=2)
+        i4_data_array = reduce_bytes(i4_data_array).astype(np.uint8)
+        
+        from n64tex.formats.i4 import I4Image
+        return I4Image(i4_data_array, self.width, self.height)
