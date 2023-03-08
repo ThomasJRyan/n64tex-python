@@ -1,11 +1,11 @@
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from n64tex.formats import RGBA5551Image, I4Image
+    from n64tex.formats import RGBA5551Image, I4Image, I8Image
 
 import numpy as np
 
-from n64tex.formats.base import BaseImage
+from n64tex.formats.base import BaseImage, T
 
 class RGBAImage(BaseImage):
     """RGBA Image format. Each pixel is 32 bits long and follow this format
@@ -34,6 +34,15 @@ class RGBAImage(BaseImage):
         data_array = np.resize(data_array, (height, width, 4)).astype('>u1')
         return cls(data_array, width, height)
     
+    def convert_to(self, cls: T) -> T:
+        from n64tex.formats import RGBA5551Image, I4Image, I8Image
+        CONVERTERS = {
+            RGBA5551Image: self.to_rgba5551,
+            I4Image: self.to_i4,
+            I8Image: self.to_i8,
+        }
+        return CONVERTERS[cls]()
+    
     def to_rgba5551(self) -> 'RGBA5551Image':
         """Converts RGBAImage to RGBA5551Image
 
@@ -44,7 +53,7 @@ class RGBAImage(BaseImage):
             rgba_value[0] = (rgba_value[0] >> 3) << 11
             rgba_value[1] = (rgba_value[1] >> 3) << 6
             rgba_value[2] = (rgba_value[2] >> 3) << 1
-            rgba_value[3] = 1 if rgba_value[3] == 255 else 0
+            rgba_value[3] = 1 if rgba_value[3] > 0 else 0
             
         rgba_5551_data_array = self.data_array.copy()
         rgba_5551_data_array = rgba_5551_data_array.astype(np.uint16)
@@ -73,3 +82,18 @@ class RGBAImage(BaseImage):
         
         from n64tex.formats.i4 import I4Image
         return I4Image(i4_data_array, self.width, self.height)
+    
+    def to_i8(self) -> 'I8Image':
+        """Converts RGBAImage to I8Image
+
+        Returns:
+            I8Image: Converted I8Image object
+        """
+        # reduce_bytes = lambda x: x // 17
+        
+        i8_data_array = self.data_array.copy()
+        i8_data_array = np.average(i8_data_array, axis=2)
+        # i8_data_array = reduce_bytes(i8_data_array).astype(np.uint8)
+        
+        from n64tex.formats.i8 import I8Image
+        return I8Image(i8_data_array, self.width, self.height)
