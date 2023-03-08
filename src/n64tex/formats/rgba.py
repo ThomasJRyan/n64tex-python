@@ -7,19 +7,21 @@ import numpy as np
 
 from n64tex.formats.base import BaseImage, T
 
+
 class RGBAImage(BaseImage):
     """RGBA Image format. Each pixel is 32 bits long and follow this format
-    
-        RRRRRRRR GGGGGGGG BBBBBBBB AAAAAAAA
-        
-        Where:
-            R = Red channel from 0-255
-            G = Green channel from 0-255
-            B = Blue channel from 0-255
-            A = Alpha channel from 0-255
+
+    RRRRRRRR GGGGGGGG BBBBBBBB AAAAAAAA
+
+    Where:
+        R = Red channel from 0-255
+        G = Green channel from 0-255
+        B = Blue channel from 0-255
+        A = Alpha channel from 0-255
     """
+
     @classmethod
-    def from_bytes(cls, raw_bytes: bytes, width: int, height: int) -> 'RGBAImage':
+    def from_bytes(cls, raw_bytes: bytes, width: int, height: int) -> "RGBAImage":
         """Generate an RGBAImage from byte data
 
         Args:
@@ -30,60 +32,64 @@ class RGBAImage(BaseImage):
         Returns:
             RGBAImage: RGBAImage object
         """
-        data_array = np.frombuffer(raw_bytes, dtype='>u1')
-        data_array = np.resize(data_array, (height, width, 4)).astype('>u1')
+        data_array = np.frombuffer(raw_bytes, dtype=">u1")
+        data_array = np.resize(data_array, (height, width, 4)).astype(">u1")
         return cls(data_array, width, height)
-    
+
     def convert_to(self, cls: T) -> T:
         from n64tex.formats import RGBA5551Image, I4Image, I8Image
+
         CONVERTERS = {
             RGBA5551Image: self.to_rgba5551,
             I4Image: self.to_i4,
             I8Image: self.to_i8,
         }
         return CONVERTERS[cls]()
-    
-    def to_rgba5551(self) -> 'RGBA5551Image':
+
+    def to_rgba5551(self) -> "RGBA5551Image":
         """Converts RGBAImage to RGBA5551Image
 
         Returns:
             RGBA5551Image: Converted RGBA5551Image object
         """
+
         def rgba_to_rgba5551(rgba_value):
             rgba_value[0] = (rgba_value[0] >> 3) << 11
             rgba_value[1] = (rgba_value[1] >> 3) << 6
             rgba_value[2] = (rgba_value[2] >> 3) << 1
             rgba_value[3] = 1 if rgba_value[3] > 0 else 0
-            
+
         rgba_5551_data_array = self.data_array.copy()
         rgba_5551_data_array = rgba_5551_data_array.astype(np.uint16)
-        
+
         for pixel_row in rgba_5551_data_array:
             for pixel_colour in pixel_row:
                 rgba_to_rgba5551(pixel_colour)
-                
+
         rgba_5551_data_array = np.sum(rgba_5551_data_array, axis=2)
         rgba_5551_data_array = rgba_5551_data_array.astype(np.uint16)
-                
+
         from n64tex.formats.rgba5551 import RGBA5551Image
+
         return RGBA5551Image(rgba_5551_data_array, self.width, self.height)
-    
-    def to_i4(self) -> 'I4Image':
+
+    def to_i4(self) -> "I4Image":
         """Converts RGBAImage to I4Image
 
         Returns:
             I4Image: Converted I4Image object
         """
         reduce_bytes = lambda x: x // 17
-        
+
         i4_data_array = self.data_array.copy()
         i4_data_array = np.average(i4_data_array, axis=2)
         i4_data_array = reduce_bytes(i4_data_array).astype(np.uint8)
-        
+
         from n64tex.formats.i4 import I4Image
+
         return I4Image(i4_data_array, self.width, self.height)
-    
-    def to_i8(self) -> 'I8Image':
+
+    def to_i8(self) -> "I8Image":
         """Converts RGBAImage to I8Image
 
         Returns:
@@ -91,6 +97,7 @@ class RGBAImage(BaseImage):
         """
         i8_data_array = self.data_array.copy()
         i8_data_array = np.average(i8_data_array, axis=2).astype(np.uint8)
-        
+
         from n64tex.formats.i8 import I8Image
+
         return I8Image(i8_data_array, self.width, self.height)
