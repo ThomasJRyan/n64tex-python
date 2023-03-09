@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from n64tex.formats import RGBA5551Image, I4Image, I8Image
+    from n64tex.formats import RGBA5551Image, I4Image, I8Image, I4AImage
 
 import numpy as np
 
@@ -37,11 +37,12 @@ class RGBAImage(BaseImage):
         return cls(data_array, width, height)
 
     def convert_to(self, cls: T) -> T:
-        from n64tex.formats import RGBA5551Image, I4Image, I8Image
+        from n64tex.formats import RGBA5551Image, I4Image, I8Image, I4AImage
 
         CONVERTERS = {
             RGBA5551Image: self.to_rgba5551,
             I4Image: self.to_i4,
+            I4AImage: self.to_i4a,
             I8Image: self.to_i8,
         }
         return CONVERTERS[cls]()
@@ -79,15 +80,33 @@ class RGBAImage(BaseImage):
         Returns:
             I4Image: Converted I4Image object
         """
-        reduce_bytes = lambda x: x // 17
+        reduce_bytes = lambda x: x / 17
 
         i4_data_array = self.data_array.copy()
         i4_data_array = np.average(i4_data_array, axis=2)
-        i4_data_array = reduce_bytes(i4_data_array).astype(np.uint8)
+        i4_data_array = reduce_bytes(i4_data_array)
+        i4_data_array = np.round(i4_data_array).astype(np.uint8)
 
         from n64tex.formats.i4 import I4Image
 
         return I4Image(i4_data_array, self.width, self.height)
+    
+    def to_i4a(self) -> "I4AImage":
+        """Converts RGBAImage to I4AImage
+
+        Returns:
+            I4Image: Converted I4AImage object
+        """
+        reduce_bytes = lambda x: x / 17
+
+        i4a_data_array = self.data_array.copy()
+        i4a_data_array = np.average(i4a_data_array, axis=2)
+        i4a_data_array = reduce_bytes(i4a_data_array)
+        i4a_data_array = np.round(i4a_data_array).astype(np.uint8)
+
+        from n64tex.formats.i4a import I4AImage
+
+        return I4AImage(i4a_data_array, self.width, self.height)
 
     def to_i8(self) -> "I8Image":
         """Converts RGBAImage to I8Image

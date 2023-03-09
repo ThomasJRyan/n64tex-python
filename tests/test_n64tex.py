@@ -46,7 +46,7 @@ class TestRGBAImage(unittest.TestCase):
         self.assertTrue(
             (
                 self.image.to_i4().data_array
-                == np.array([[7, 7, 7], [3, 15, 11]], dtype=np.uint8)
+                == np.array([[8, 8, 8], [4, 15, 11]], dtype=np.uint8)
             ).all()
         )
 
@@ -55,6 +55,14 @@ class TestRGBAImage(unittest.TestCase):
             (
                 self.image.to_i8().data_array
                 == np.array([[127, 127, 127], [63, 255, 191]], dtype=np.uint8)
+            ).all()
+        )
+        
+    def test_conversion_to_i4a(self):
+        self.assertTrue(
+            (
+                self.image.to_i4a().data_array
+                == np.array([[8, 8, 8], [4, 15, 11]], dtype=np.uint8)
             ).all()
         )
 
@@ -182,7 +190,46 @@ class TestI8Image(unittest.TestCase):
 
 
 class TestIA4Image(unittest.TestCase):
-    pass
+    def setUp(self) -> None:
+        self.image = I4Image.from_bytes(
+            raw_bytes=b"\x77\x73\xFB",
+            width=3,
+            height=2,
+        )
+        return super().setUp()
+
+    def test_data_array(self):
+        self.assertTrue(
+            (
+                self.image.data_array
+                == np.array([[7, 7, 7], [3, 15, 11]], dtype=np.uint8)
+            ).all(),
+        )
+
+    def test_bytes(self):
+        self.assertEqual(
+            self.image.data_array.tobytes(),
+            b"\x07\x07\x07\x03\x0f\x0b",
+        )
+
+    def test_conversion_to_rgba(self):
+        self.assertTrue(
+            (
+                self.image.to_rgba().data_array
+                == np.array(
+                    [
+                        [
+                            [119, 119, 119, 119],
+                            [119, 119, 119, 119],
+                            [119, 119, 119, 119],
+                        ],
+                        [[51, 51, 51, 51], [255, 255, 255, 255], [187, 187, 187, 187]],
+                    ],
+                    dtype=np.uint8,
+                )
+            ).all()
+        )
+
 
 
 class TestIA8Image(unittest.TestCase):
