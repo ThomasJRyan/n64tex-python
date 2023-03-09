@@ -5,8 +5,6 @@ if TYPE_CHECKING:
 
 import numpy as np
 
-from PIL import Image
-
 from n64tex.formats.base import BaseImage
 
 
