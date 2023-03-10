@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from n64tex.formats import RGBA5551Image, I4Image, I8Image, I4AImage
+    from n64tex.formats import RGBA5551Image, I4Image, I8Image, I4AImage, I8AImage
 
 import numpy as np
 
@@ -37,13 +37,14 @@ class RGBAImage(BaseImage):
         return cls(data_array, width, height)
 
     def convert_to(self, cls: T) -> T:
-        from n64tex.formats import RGBA5551Image, I4Image, I8Image, I4AImage
+        from n64tex.formats import RGBA5551Image, I4Image, I8Image, I4AImage, I8AImage
 
         CONVERTERS = {
             RGBA5551Image: self.to_rgba5551,
             I4Image: self.to_i4,
             I4AImage: self.to_i4a,
             I8Image: self.to_i8,
+            I8AImage: self.to_i8a,
         }
         return CONVERTERS[cls]()
 
@@ -97,6 +98,7 @@ class RGBAImage(BaseImage):
         Returns:
             I4Image: Converted I4AImage object
         """
+        # ! It's likely that this is incorrect. A second set of eyes is necessary
         reduce_bytes = lambda x: x / 17
 
         i4a_data_array = self.data_array.copy()
@@ -120,3 +122,16 @@ class RGBAImage(BaseImage):
         from n64tex.formats.i8 import I8Image
 
         return I8Image(i8_data_array, self.width, self.height)
+
+    def to_i8a(self) -> "I8AImage":
+        """Converts RGBAImage to I8AImage
+
+        Returns:
+            I8AImage: Converted I8AImage object
+        """
+        i8a_data_array = self.data_array.copy()
+        i8a_data_array = np.average(i8a_data_array, axis=2).astype(np.uint8)
+
+        from n64tex.formats.i8a import I8AImage
+
+        return I8AImage(i8a_data_array, self.width, self.height)

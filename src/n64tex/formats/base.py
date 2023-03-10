@@ -7,7 +7,7 @@ from PIL import Image
 T = TypeVar("T", bound="BaseImage")
 
 if TYPE_CHECKING:
-    from n64tex.formats import RGBAImage, RGBA5551Image, I4Image, I8Image
+    from n64tex.formats import RGBAImage, RGBA5551Image, I4Image, I8Image, I4AImage, I8AImage
 
 
 class BaseImage(ABC):
@@ -24,9 +24,9 @@ class BaseImage(ABC):
             width (int): Width of image
             height (int): Height of image
         """
-        self.data_array = data_array
-        self.width = width
-        self.height = height
+        self.data_array: np.array = data_array
+        self.width: int = width
+        self.height: int = height
 
     @abstractclassmethod
     def from_bytes(cls, raw_bytes: bytes, width: int, height: int):
@@ -70,6 +70,15 @@ class BaseImage(ABC):
             image = Image.fromarray(self.data_array)
         image.save(filename)
 
+    def to_bytes(self) -> bytes:
+        """Return image bytes
+
+        Returns:
+            bytes: Image bytes
+        """
+        return self.data_array.tobytes()
+
+
     def to_rgba5551(self) -> "RGBA5551Image":
         """Convert to RGBA5551Image
 
@@ -93,3 +102,19 @@ class BaseImage(ABC):
             I8Image: Converted I8Image object
         """
         return self.to_rgba().to_i8()
+
+    def to_i4a(self) -> "I4AImage":
+        """Convert to I4AImage
+
+        Returns:
+            I4AImage: Converted I4AImage object
+        """
+        return self.to_rgba().to_i4a()
+
+    def to_i8a(self) -> "I8AImage":
+        """Convert to I8AImage
+
+        Returns:
+            I8AImage: Converted I8AImage object
+        """
+        return self.to_rgba().to_i8a()
