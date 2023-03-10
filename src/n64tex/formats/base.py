@@ -13,20 +13,22 @@ if TYPE_CHECKING:
 class BaseImage(ABC):
     """Base class to derive image format classes from"""
 
-    def __init__(self, data_array: np.array, width: int, height: int):
+    def __init__(self, data_array: np.array, width: int, height: int, palette: np.array = None):
         """Initializer that takes in Numpy array, width, and height. This
            shouldn't be called directly unless you know what you're doing.
            Instead, you should call either the `from_image` or `from_bytes`
-           class methods.
+           class methods. Can optionally take a palette array for CI images
 
         Args:
             data_array (np.array): Numpy array
             width (int): Width of image
             height (int): Height of image
+            palette (np.array, optional): Colour palette to use with this image. Defaults to None.
         """
         self.data_array: np.array = data_array
         self.width: int = width
         self.height: int = height
+        self.palette: np.array = palette
 
     @abstractclassmethod
     def from_bytes(cls, raw_bytes: bytes, width: int, height: int):

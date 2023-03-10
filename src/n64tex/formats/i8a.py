@@ -22,7 +22,7 @@ class I8AImage(BaseImage):
     """
 
     @classmethod
-    def from_bytes(cls, raw_bytes: bytes, width: int, height: int) -> "I8AImage":
+    def from_bytes(cls, raw_bytes: bytes, width: int, height: int, *args, **kwargs) -> "I8AImage":
         """Generate an I8AImage from byte data
 
         Args:

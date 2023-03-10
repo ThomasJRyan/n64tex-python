@@ -21,7 +21,7 @@ class RGBA5551Image(BaseImage):
     """
 
     @classmethod
-    def from_bytes(cls, raw_bytes: bytes, width: int, height: int) -> "RGBA5551Image":
+    def from_bytes(cls, raw_bytes: bytes, width: int, height: int, *args, **kwargs) -> "RGBA5551Image":
         """Generate an RGBA5551Image from byte data
 
         Args:

@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from n64tex.formats import RGBA5551Image, I4Image, I8Image, I4AImage, I8AImage
+    from n64tex.formats import RGBA5551Image, I4Image, I8Image, I4AImage, I8AImage, CI4Image
 
 import numpy as np
 
@@ -21,7 +21,7 @@ class RGBAImage(BaseImage):
     """
 
     @classmethod
-    def from_bytes(cls, raw_bytes: bytes, width: int, height: int) -> "RGBAImage":
+    def from_bytes(cls, raw_bytes: bytes, width: int, height: int, *args, **kwargs) -> "RGBAImage":
         """Generate an RGBAImage from byte data
 
         Args:
@@ -37,7 +37,7 @@ class RGBAImage(BaseImage):
         return cls(data_array, width, height)
 
     def convert_to(self, cls: T) -> T:
-        from n64tex.formats import RGBA5551Image, I4Image, I8Image, I4AImage, I8AImage
+        from n64tex.formats import RGBA5551Image, I4Image, I8Image, I4AImage, I8AImage, CI4Image
 
         CONVERTERS = {
             RGBA5551Image: self.to_rgba5551,
@@ -45,6 +45,7 @@ class RGBAImage(BaseImage):
             I4AImage: self.to_i4a,
             I8Image: self.to_i8,
             I8AImage: self.to_i8a,
+            CI4Image: self.to_ci4,
         }
         return CONVERTERS[cls]()
 
@@ -135,3 +136,37 @@ class RGBAImage(BaseImage):
         from n64tex.formats.i8a import I8AImage
 
         return I8AImage(i8a_data_array, self.width, self.height)
+    
+    def to_ci4(self) -> "CI4Image":
+        """Converts RGBAImage to CI4Image
+
+        Returns:
+            CI4Image: Converted CI4Image object
+        """
+        
+        def rgba_to_rgba5551(rgba_value):
+            rgba_value[0] = (rgba_value[0] >> 3) << 11
+            rgba_value[1] = (rgba_value[1] >> 3) << 6
+            rgba_value[2] = (rgba_value[2] >> 3) << 1
+            rgba_value[3] = 1 if rgba_value[3] > 0 else 0
+        
+        palette_data_array = np.reshape(self.data_array, (-1, 4))
+        palette_data_array = np.unique(palette_data_array, axis=0)
+        
+        ci4_data_array = list()
+        for pixel_colour in np.reshape(self.data_array, (-1, 4)):
+            palette_index = np.where(np.all(palette_data_array == pixel_colour, axis=-1))[0][0]
+            ci4_data_array.append(palette_index)
+        ci4_data_array = np.array(ci4_data_array)
+        ci4_data_array = np.resize(ci4_data_array, (self.height, self.width))
+        ci4_data_array = ci4_data_array.astype(np.uint8)
+        
+        palette_data_array = palette_data_array.astype(np.uint16)
+        for pixel_colour in palette_data_array:
+            rgba_to_rgba5551(pixel_colour)
+        palette_data_array = np.sum(palette_data_array, axis=1)
+        palette_data_array = palette_data_array.astype(np.uint16)
+            
+        from n64tex.formats.ci4 import CI4Image
+
+        return CI4Image(ci4_data_array, self.width, self.height, palette_data_array)
