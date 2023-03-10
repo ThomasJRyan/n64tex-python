@@ -11,9 +11,9 @@ An image converter for N64 image formats written in Python
 
 [X] I8
 
-[ ] IA4
+[X] IA4
 
-[ ] IA8
+[X] IA8
 
 [ ] IA16
 
