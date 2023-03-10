@@ -10,6 +10,7 @@ from n64tex.formats import (
     I4AImage,
     I8AImage,
     CI4Image,
+    CI8Image,
 )
 
 
@@ -90,6 +91,21 @@ class TestRGBAImage(unittest.TestCase):
             ).all()
         )
 
+    def test_conversion_to_ci8(self):
+        self.assertTrue(
+            (
+                self.image.to_ci8().data_array
+                == np.array([[3, 2, 1], [0, 5, 4]], dtype=np.uint8)
+            ).all()
+        )
+
+    def test_conversion_to_ci8_palette(self):
+        self.assertTrue(
+            (
+                self.image.to_ci8().palette
+                == np.array([1, 63, 1985, 63489, 65534, 65535], dtype=np.uint16)
+            ).all()
+        )
 
 class TestRGBA5551Image(unittest.TestCase):
     def setUp(self) -> None:
@@ -344,10 +360,61 @@ class TestCI4Image(unittest.TestCase):
                 )
             ).all()
         )
+        
+    def test_oversized_palette(self):
+        self.assertRaises(AssertionError, CI4Image, None, None, None, np.arange(17))
 
 
 class TestCI8Image(unittest.TestCase):
-    pass
+    def setUp(self) -> None:
+        self.image = CI8Image.from_bytes(
+            raw_bytes=b'\x03\x02\x01\x00\x05\x04',
+            width=3,
+            height=2,
+            palette_bytes=b"\x00\x01\x00?\x07\xc1\xf8\x01\xff\xfe\xff\xff",
+        )
+        return super().setUp()
+
+    def test_data_array(self):
+        self.assertTrue(
+            (
+                self.image.data_array
+                == np.array([[3, 2, 1], [0, 5, 4]], dtype=np.uint8)
+            ).all(),
+        )
+
+    def test_palette(self):
+        self.assertTrue(
+            (
+                self.image.palette
+                == np.array([1, 63, 1985, 63489, 65534, 65535], dtype=np.uint16)
+            ).all()
+        )
+
+    def test_bytes(self):
+        self.assertEqual(
+            self.image.to_bytes(),
+            b"\x03\x02\x01\x00\x05\x04",
+        )
+
+    def test_conversion_to_rgba(self):
+        self.assertTrue(
+            (
+                self.image.to_rgba().data_array
+                == np.array(
+                    [
+                        [
+                            [[248, 0, 0, 255], [0, 248, 0, 255], [0, 0, 248, 255]],
+                            [[0, 0, 0, 255], [248, 248, 248, 255], [248, 248, 248, 0]],
+                        ],
+                    ],
+                    dtype=np.uint8,
+                )
+            ).all()
+        )
+        
+    def test_oversized_palette(self):
+        self.assertRaises(AssertionError, CI8Image, None, None, None, np.arange(17))
 
 
 if __name__ == "__main__":

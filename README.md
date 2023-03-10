@@ -7,16 +7,14 @@ An image converter for N64 image formats written in Python
 
 [x] RGBA5551
 
-[X] I4
+[x] I4
 
-[X] I8
+[x] I8
 
-[X] IA4
+[x] IA4
 
-[X] IA8
+[x] IA8
 
-[ ] IA16
+[x] CI4
 
-[ ] CI4
-
-[ ] CI8
+[x] CI8

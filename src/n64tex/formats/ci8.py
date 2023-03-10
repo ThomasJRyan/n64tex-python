@@ -7,13 +7,13 @@ import numpy as np
 
 from n64tex.formats.base import BaseImage
 
-class CI4Image(BaseImage):
-    """CI4 Image format. Each pixel is 4 bits long, which are pointers to an array of RGBA5551 colours
-       The palette can only have 16 colours
+class CI8Image(BaseImage):
+    """CI8 Image format. Each pixel is 4 bits long, which are pointers to an array of RGBA5551 colours
+       The palette can only have 255 colours
     
     The image follows this format:
     
-    PPPP
+    PPPPPPPP
     
     Where: 
         P = Address of colour in RGBA5551 array
@@ -42,12 +42,12 @@ class CI4Image(BaseImage):
             height (int): Height of image
             palette (np.array, optional): Colour palette to use with this image. Defaults to None.
         """
-        assert 15 >= len(palette) >= 0, "CI4 Images can only support a palette of 16 colours"
+        assert 15 >= len(palette) >= 0, "CI8 Images can only support a palette of 255 colours"
         super().__init__(data_array, width, height, palette)
     
     @classmethod
-    def from_bytes(cls, raw_bytes: bytes, width: int, height: int, palette_bytes: bytes) -> "CI4Image":
-        """Generate an CI4Image from byte data
+    def from_bytes(cls, raw_bytes: bytes, width: int, height: int, palette_bytes: bytes) -> "CI8Image":
+        """Generate an CI8Image from byte data
 
         Args:
             raw_bytes (bytes): Raw byte data to use
@@ -56,12 +56,12 @@ class CI4Image(BaseImage):
             palette_bytes (bytes): Colour palette bytes to use with this image
 
         Returns:
-            CI4Image: CI4Image object
+            CI8Image: CI8Image object
         """
         # Image pointers
-        split_bytes = lambda x: ((x & 0xF0) >> 4, x & 0x0F)
+        # split_bytes = lambda x: ((x & 0xF0) >> 4, x & 0x0F)
         data_array = np.frombuffer(raw_bytes, dtype=">u1")
-        data_array = np.ravel(np.column_stack(split_bytes(data_array)))
+        # data_array = np.ravel(np.column_stack(split_bytes(data_array)))
         data_array = np.resize(data_array, (height, width))
         
         # Image palette
@@ -70,7 +70,7 @@ class CI4Image(BaseImage):
         return cls(data_array, width, height, palette)
     
     def to_rgba(self) -> "RGBAImage":
-        """Converts CI4Image to RGBAImage
+        """Converts CI8Image to RGBAImage
 
         Returns:
             RGBAImage: Converted RGBAImage object

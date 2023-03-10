@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from n64tex.formats import RGBA5551Image, I4Image, I8Image, I4AImage, I8AImage, CI4Image
+    from n64tex.formats import RGBA5551Image, I4Image, I8Image, I4AImage, I8AImage, CI4Image, CI8Image
 
 import numpy as np
 
@@ -37,7 +37,7 @@ class RGBAImage(BaseImage):
         return cls(data_array, width, height)
 
     def convert_to(self, cls: T) -> T:
-        from n64tex.formats import RGBA5551Image, I4Image, I8Image, I4AImage, I8AImage, CI4Image
+        from n64tex.formats import RGBA5551Image, I4Image, I8Image, I4AImage, I8AImage, CI4Image, CI8Image
 
         CONVERTERS = {
             RGBA5551Image: self.to_rgba5551,
@@ -46,6 +46,7 @@ class RGBAImage(BaseImage):
             I8Image: self.to_i8,
             I8AImage: self.to_i8a,
             CI4Image: self.to_ci4,
+            CI8Image: self.to_ci8,
         }
         return CONVERTERS[cls]()
 
@@ -149,6 +150,48 @@ class RGBAImage(BaseImage):
             rgba_value[1] = (rgba_value[1] >> 3) << 6
             rgba_value[2] = (rgba_value[2] >> 3) << 1
             rgba_value[3] = 1 if rgba_value[3] > 0 else 0
+
+        # Generate the Palette Array if it doesn't already exist
+        if self.palette is not None:
+            palette_data_array = self.palette.copy()
+        else:
+            palette_data_array = np.reshape(self.data_array, (-1, 4))
+            palette_data_array = np.unique(palette_data_array, axis=0)
+            
+            palette_data_array = palette_data_array.astype(np.uint16)
+            for pixel_colour in palette_data_array:
+                rgba_to_rgba5551(pixel_colour)
+            palette_data_array = np.sum(palette_data_array, axis=1)
+            palette_data_array = np.unique(palette_data_array, axis=0)
+            palette_data_array = palette_data_array.astype(np.uint16)
+
+        # Generate the Pointer Array
+        ci4_data_array = list()
+        for pixel_colour in np.reshape(self.data_array, (-1, 4)).astype(np.uint16):
+            rgba_to_rgba5551(pixel_colour)
+            palette_index = np.where(palette_data_array == np.sum(pixel_colour))
+            ci4_data_array.append(palette_index)
+        
+        ci4_data_array = np.array(ci4_data_array)
+        ci4_data_array = np.resize(ci4_data_array, (self.height, self.width))
+        ci4_data_array = ci4_data_array.astype(np.uint8)
+            
+        from n64tex.formats.ci4 import CI4Image
+
+        return CI4Image(ci4_data_array, self.width, self.height, palette_data_array)
+    
+    def to_ci8(self) -> "CI8Image":
+        """Converts RGBAImage to CI8Image
+
+        Returns:
+            CI8Image: Converted CI8Image object
+        """
+        
+        def rgba_to_rgba5551(rgba_value):
+            rgba_value[0] = (rgba_value[0] >> 3) << 11
+            rgba_value[1] = (rgba_value[1] >> 3) << 6
+            rgba_value[2] = (rgba_value[2] >> 3) << 1
+            rgba_value[3] = 1 if rgba_value[3] > 0 else 0
             
         # Generate the Palette Array if it doesn't already exist
         if self.palette is not None:
@@ -161,18 +204,19 @@ class RGBAImage(BaseImage):
             for pixel_colour in palette_data_array:
                 rgba_to_rgba5551(pixel_colour)
             palette_data_array = np.sum(palette_data_array, axis=1)
+            palette_data_array = np.unique(palette_data_array, axis=0)
             palette_data_array = palette_data_array.astype(np.uint16)
         
         # Generate the Pointer Array
-        ci4_data_array = list()
+        ci8_data_array = list()
         for pixel_colour in np.reshape(self.data_array, (-1, 4)).astype(np.uint16):
             rgba_to_rgba5551(pixel_colour)
             palette_index = np.where(palette_data_array == np.sum(pixel_colour))
-            ci4_data_array.append(palette_index)
-        ci4_data_array = np.array(ci4_data_array)
-        ci4_data_array = np.resize(ci4_data_array, (self.height, self.width))
-        ci4_data_array = ci4_data_array.astype(np.uint8)
+            ci8_data_array.append(palette_index)
+        ci8_data_array = np.array(ci8_data_array)
+        ci8_data_array = np.resize(ci8_data_array, (self.height, self.width))
+        ci8_data_array = ci8_data_array.astype(np.uint8)
             
-        from n64tex.formats.ci4 import CI4Image
+        from n64tex.formats.ci8 import CI8Image
 
-        return CI4Image(ci4_data_array, self.width, self.height, palette_data_array)
+        return CI8Image(ci8_data_array, self.width, self.height, palette_data_array)
