@@ -82,4 +82,4 @@ class CI4Image(BaseImage):
         
         from n64tex.formats.rgba import RGBAImage
 
-        return RGBAImage(rgba_data_array, self.width, self.height)
+        return RGBAImage(rgba_data_array, self.width, self.height, self.palette)

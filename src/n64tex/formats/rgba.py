@@ -149,23 +149,29 @@ class RGBAImage(BaseImage):
             rgba_value[1] = (rgba_value[1] >> 3) << 6
             rgba_value[2] = (rgba_value[2] >> 3) << 1
             rgba_value[3] = 1 if rgba_value[3] > 0 else 0
+            
+        # Generate the Palette Array if it doesn't already exist
+        if self.palette is not None:
+            palette_data_array = self.palette.copy()
+        else:
+            palette_data_array = np.reshape(self.data_array, (-1, 4))
+            palette_data_array = np.unique(palette_data_array, axis=0)
+            
+            palette_data_array = palette_data_array.astype(np.uint16)
+            for pixel_colour in palette_data_array:
+                rgba_to_rgba5551(pixel_colour)
+            palette_data_array = np.sum(palette_data_array, axis=1)
+            palette_data_array = palette_data_array.astype(np.uint16)
         
-        palette_data_array = np.reshape(self.data_array, (-1, 4))
-        palette_data_array = np.unique(palette_data_array, axis=0)
-        
+        # Generate the Pointer Array
         ci4_data_array = list()
-        for pixel_colour in np.reshape(self.data_array, (-1, 4)):
-            palette_index = np.where(np.all(palette_data_array == pixel_colour, axis=-1))[0][0]
+        for pixel_colour in np.reshape(self.data_array, (-1, 4)).astype(np.uint16):
+            rgba_to_rgba5551(pixel_colour)
+            palette_index = np.where(palette_data_array == np.sum(pixel_colour))
             ci4_data_array.append(palette_index)
         ci4_data_array = np.array(ci4_data_array)
         ci4_data_array = np.resize(ci4_data_array, (self.height, self.width))
         ci4_data_array = ci4_data_array.astype(np.uint8)
-        
-        palette_data_array = palette_data_array.astype(np.uint16)
-        for pixel_colour in palette_data_array:
-            rgba_to_rgba5551(pixel_colour)
-        palette_data_array = np.sum(palette_data_array, axis=1)
-        palette_data_array = palette_data_array.astype(np.uint16)
             
         from n64tex.formats.ci4 import CI4Image
 
