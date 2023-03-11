@@ -89,6 +89,8 @@ class BaseImage(ABC):
         Returns:
             bytes: Image bytes
         """
+        if self.data_array.dtype == np.uint16:
+            return self.data_array.astype('>u2').tobytes()
         return self.data_array.tobytes()
 
 

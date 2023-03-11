@@ -414,7 +414,7 @@ class TestCI8Image(unittest.TestCase):
         )
         
     def test_oversized_palette(self):
-        self.assertRaises(AssertionError, CI8Image, None, None, None, np.arange(17))
+        self.assertRaises(AssertionError, CI8Image, None, None, None, np.arange(257))
 
 
 if __name__ == "__main__":

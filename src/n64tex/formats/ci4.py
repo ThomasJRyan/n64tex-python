@@ -45,7 +45,7 @@ class CI4Image(BaseImage):
             palette (np.array, optional): Colour palette to use with this image. Defaults to None.
         """
         assert palette is not None, "A palette is required for CI4 Images"
-        assert 16 >= len(palette) >= 1, "CI4 Images can only support a palette of 16 colours.\nPalette has {len(palette)} colours"
+        assert 16 >= len(palette) >= 1, f"CI4 Images can only support a palette of 16 colours.\nPalette has {len(palette)} colours"
         super().__init__(data_array, width, height, palette)
     
     @classmethod

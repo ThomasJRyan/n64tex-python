@@ -92,11 +92,11 @@ def cli() -> None:
         
     # Handle writing to bytes
     if args.write_bytes:
-        with open(output_file.stem, 'wb') as fil:
+        with open(output_file.parent / output_file.stem, 'wb') as fil:
             fil.write(converted_obj.to_bytes())
         if converted_obj.palette is not None:
             palette_path = output_file.parent / f'palette_{output_file.name}'
-            with open(palette_path.stem, 'wb') as fil:
+            with open(palette_path.parent / palette_path.stem, 'wb') as fil:
                 fil.write(converted_obj.palette.astype('>u2').tobytes())
     
     # Save image
