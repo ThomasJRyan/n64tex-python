@@ -40,6 +40,7 @@ class RGBAImage(BaseImage):
         from n64tex.formats import RGBA5551Image, I4Image, I8Image, I4AImage, I8AImage, CI4Image, CI8Image
 
         CONVERTERS = {
+            RGBAImage: lambda: self,
             RGBA5551Image: self.to_rgba5551,
             I4Image: self.to_i4,
             I4AImage: self.to_i4a,

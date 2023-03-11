@@ -7,7 +7,7 @@ from PIL import Image
 T = TypeVar("T", bound="BaseImage")
 
 if TYPE_CHECKING:
-    from n64tex.formats import RGBAImage, RGBA5551Image, I4Image, I8Image, I4AImage, I8AImage
+    from n64tex.formats import RGBAImage, RGBA5551Image, I4Image, I8Image, I4AImage, I8AImage, CI4Image, CI8Image
 
 
 class BaseImage(ABC):
@@ -59,6 +59,17 @@ class BaseImage(ABC):
             return RGBAImage.from_image(image, width, height).convert_to(cls)
 
         return cls.from_bytes(image.tobytes(), width, height)
+    
+    def convert_to(self, cls: T) -> T:
+        """Generic method for converting to another format
+
+        Args:
+            cls (T): Image format to convert to
+
+        Returns:
+            T: Converted image
+        """
+        return self.to_rgba().convert_to(cls)
 
     def save(self, filename: str):
         """Saves Format Object to a file using PIL
@@ -120,3 +131,19 @@ class BaseImage(ABC):
             I8AImage: Converted I8AImage object
         """
         return self.to_rgba().to_i8a()
+    
+    def to_ci4(self) -> "CI4Image":
+        """Convert to CI4Image
+
+        Returns:
+            CI4Image: Converted CI4Image object
+        """
+        return self.to_rgba().to_ci4()
+    
+    def to_ci8(self) -> "CI8Image":
+        """Convert to CI8Image
+
+        Returns:
+            CI8Image: Converted CI8Image object
+        """
+        return self.to_rgba().to_ci8()

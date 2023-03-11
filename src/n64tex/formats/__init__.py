@@ -19,3 +19,6 @@ class Formats(Enum):
     ci8 = CI8Image
     rgba = RGBAImage
     rgba5551 = RGBA5551Image
+
+    def __str__(self):
+        return self.name

@@ -1,3 +1,5 @@
+import pathlib
+
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -42,7 +44,8 @@ class CI8Image(BaseImage):
             height (int): Height of image
             palette (np.array, optional): Colour palette to use with this image. Defaults to None.
         """
-        assert 15 >= len(palette) >= 0, "CI8 Images can only support a palette of 255 colours"
+        assert palette is not None, "A palette is required for CI8 Images"
+        assert 256 >= len(palette) >= 1, f"CI8 Images can only support a palette of 255 colours.\nPalette has {len(palette)} colours"
         super().__init__(data_array, width, height, palette)
     
     @classmethod
@@ -59,12 +62,11 @@ class CI8Image(BaseImage):
             CI8Image: CI8Image object
         """
         # Image pointers
-        # split_bytes = lambda x: ((x & 0xF0) >> 4, x & 0x0F)
         data_array = np.frombuffer(raw_bytes, dtype=">u1")
-        # data_array = np.ravel(np.column_stack(split_bytes(data_array)))
         data_array = np.resize(data_array, (height, width))
         
         # Image palette
+        assert palette_bytes, "CI8 images require a palette to function"
         palette = np.frombuffer(palette_bytes, dtype=">u2")
         
         return cls(data_array, width, height, palette)
@@ -99,3 +101,15 @@ class CI8Image(BaseImage):
         from n64tex.formats.rgba import RGBAImage
 
         return RGBAImage(rgba_data_array, self.width, self.height, self.palette)
+    
+    def save(self, filename: str):
+        """Saves Object to a file using PIL along with the palette
+
+        Args:
+            filename (str): Filename to save to
+        """
+        from n64tex.formats import RGBA5551Image
+        filepath = pathlib.Path(filename)
+        palette = RGBA5551Image.from_bytes(self.palette.astype('>u2').tobytes(), 16, 16)
+        palette.save(filepath.parent / f'palette_{filepath.name}')
+        super().save(filename)
