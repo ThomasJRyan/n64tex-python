@@ -93,7 +93,10 @@ class CI8Image(BaseImage):
                 
         rgba_data_array = list()
         for pointer in self.data_array.flatten():
+            # try:
             rgba_data_array.append(palette_data_array[pointer])
+            # except:
+                # import pudb; pu.db
             
         rgba_data_array = np.array(rgba_data_array, dtype=">u1")
         rgba_data_array = np.resize(rgba_data_array, (self.height, self.width, 4))
@@ -102,14 +105,16 @@ class CI8Image(BaseImage):
 
         return RGBAImage(rgba_data_array, self.width, self.height, self.palette)
     
-    def save(self, filename: str):
+    def save(self, filename: str, save_palette: bool = False):
         """Saves Object to a file using PIL along with the palette
 
         Args:
             filename (str): Filename to save to
+            save_palette (bool): Whether to save the palette or not. Defaults to False
         """
-        from n64tex.formats import RGBA5551Image
-        filepath = pathlib.Path(filename)
-        palette = RGBA5551Image.from_bytes(self.palette.astype('>u2').tobytes(), 16, 16)
-        palette.save(filepath.parent / f'palette_{filepath.name}')
+        if save_palette:
+            from n64tex.formats import RGBA5551Image
+            filepath = pathlib.Path(filename)
+            palette = RGBA5551Image.from_bytes(self.palette.astype('>u2').tobytes(), 16, 16)
+            palette.save(filepath.parent / f'palette_{filepath.name}')
         super().save(filename)

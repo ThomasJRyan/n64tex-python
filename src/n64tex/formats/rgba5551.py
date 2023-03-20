@@ -54,9 +54,13 @@ class RGBA5551Image(BaseImage):
         rgba_5551_data_array = rgba_5551_data_array.astype(np.uint16)
 
         rgba_data_array = list()
-        for pixel_row in rgba_5551_data_array:
-            for pixel_colour in pixel_row:
+        if len(rgba_5551_data_array.shape) == 1:
+            for pixel_colour in rgba_5551_data_array:
                 rgba_data_array.append(rgba5551_to_rgba(pixel_colour))
+        else:
+            for pixel_row in rgba_5551_data_array:
+                for pixel_colour in pixel_row:
+                    rgba_data_array.append(rgba5551_to_rgba(pixel_colour))
 
         rgba_data_array = np.array(rgba_data_array, dtype=">u1")
         rgba_data_array = np.resize(rgba_data_array, (self.height, self.width, 4))
