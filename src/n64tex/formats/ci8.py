@@ -62,8 +62,11 @@ class CI8Image(BaseImage):
             CI8Image: CI8Image object
         """
         # Image pointers
+        if len(raw_bytes) == 2720:
+            import pudb; pu.db
         data_array = np.frombuffer(raw_bytes, dtype=">u1")
-        data_array = np.resize(data_array, (height, width))
+        data_array = np.array(data_array)
+        data_array.resize((height, width), refcheck=False)
         
         # Image palette
         assert palette_bytes, "CI8 images require a palette to function"

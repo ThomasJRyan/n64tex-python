@@ -35,8 +35,8 @@ class I4AImage(BaseImage):
         """
         split_bytes = lambda x: ((x & 0xF0) >> 4, x & 0x0F)
         data_array = np.frombuffer(raw_bytes, dtype=">u1")
-        data_array = np.ravel(np.column_stack(split_bytes(data_array)))
-        data_array = np.resize(data_array, (height, width))
+        data_array = np.array(np.ravel(np.column_stack(split_bytes(data_array))))
+        data_array.resize((height, width), refcheck=False)
         return cls(data_array, width, height)
 
     def to_rgba(self, colour: tuple[int, int, int] = (255, 255, 255)) -> "RGBAImage":

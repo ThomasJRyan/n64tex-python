@@ -34,7 +34,8 @@ class I8AImage(BaseImage):
             I8AImage: I8AImage object
         """
         data_array = np.frombuffer(raw_bytes, dtype=">u1")
-        data_array = np.resize(data_array, (height, width))
+        data_array = np.array(data_array)
+        data_array.resize((height, width), refcheck=False)
         return cls(data_array, width, height)
 
     def to_rgba(self, colour: tuple[int, int, int] = (255, 255, 255)) -> "RGBAImage":

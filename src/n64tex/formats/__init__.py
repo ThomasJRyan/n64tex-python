@@ -1,5 +1,7 @@
 from enum import Enum
 
+from typing import Union
+
 from n64tex.formats.i4 import I4Image
 from n64tex.formats.i4a import I4AImage
 from n64tex.formats.i8 import I8Image
@@ -22,3 +24,14 @@ class Formats(Enum):
 
     def __str__(self):
         return self.name
+    
+N64TextureFormat = Union[
+    I4Image,
+    I4AImage,
+    I8Image,
+    I8AImage,
+    CI4Image,
+    CI8Image,
+    RGBAImage,
+    RGBA5551Image,
+]
